@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ELLY – Football</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --turf:#1d6b3b; --turf-2:#237a44; --night:#0c2a1b;
+    --chalk:#f4f6ee; --flag:#ffd23f; --red:#e8412c;
+    --display:'Big Shoulders Display','Impact',sans-serif;
+    --body:'Work Sans',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--body);background:var(--night);color:var(--chalk);line-height:1.55}
+  a{color:inherit}
+  :focus-visible{outline:3px solid var(--flag);outline-offset:3px}
+
+  header{position:fixed;inset:0 0 auto 0;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:14px 5vw;background:rgba(12,42,27,.88);backdrop-filter:blur(6px)}
+  .mark{font-family:var(--display);font-weight:900;font-size:1.6rem;text-decoration:none;letter-spacing:.04em}
+  .mark span{color:var(--flag)}
+  nav{display:flex;gap:22px}
+  nav a{text-decoration:none;font-weight:500;font-size:.95rem;opacity:.85}
+  nav a:hover{opacity:1;color:var(--flag)}
+
+  /* Hero: a mown pitch. Click anywhere to kick the ball. */
+  .hero{position:relative;min-height:100svh;display:grid;place-items:center;text-align:center;overflow:hidden;cursor:crosshair;
+    background:repeating-linear-gradient(90deg,var(--turf) 0 90px,var(--turf-2) 90px 180px)}
+  .lines{position:absolute;inset:90px 4vw 40px;border:4px solid rgba(244,246,238,.75);pointer-events:none}
+  .lines::before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:4px solid rgba(244,246,238,.75)}
+  .lines::after{content:"";position:absolute;left:50%;top:50%;width:min(34vw,240px);aspect-ratio:1;border:4px solid rgba(244,246,238,.75);border-radius:50%;transform:translate(-50%,-50%)}
+  .hero h1{position:relative;font-family:var(--display);font-weight:900;line-height:.8;font-size:clamp(7rem,34vw,26rem);
+    color:var(--chalk);text-shadow:0 .04em 0 rgba(12,42,27,.45);letter-spacing:.02em;pointer-events:none}
+  .hero p{position:relative;font-size:clamp(1rem,2.2vw,1.35rem);margin-top:22px;background:var(--night);display:inline-block;padding:8px 18px;pointer-events:none}
+  .hint{position:absolute;bottom:56px;left:0;right:0;font-size:.9rem;opacity:.9;pointer-events:none}
+  #ball{position:absolute;width:44px;height:44px;left:50%;top:78%;margin:-22px 0 0 -22px;pointer-events:none;
+    transition:left .9s cubic-bezier(.2,.8,.3,1),top .9s cubic-bezier(.2,.8,.3,1);filter:drop-shadow(0 6px 4px rgba(0,0,0,.35))}
+  #ball svg{width:100%;height:100%;transition:transform .9s cubic-bezier(.2,.8,.3,1)}
+
+  section{padding:96px 5vw;max-width:1100px;margin:0 auto}
+  h2{font-family:var(--display);font-weight:900;font-size:clamp(2.4rem,6vw,4rem);line-height:1;margin-bottom:28px}
+  h2 em{font-style:normal;color:var(--flag)}
+
+  /* Fixtures as ticket stubs */
+  .fixtures{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+  .ticket{background:var(--chalk);color:var(--night);padding:18px 20px;border-radius:6px;position:relative;border-left:10px solid var(--flag)}
+  .ticket b{font-family:var(--display);font-size:1.7rem;line-height:1.1;display:block}
+  .ticket small{display:block;margin-top:8px;font-size:.9rem;opacity:.75}
+  .ticket.live{border-left-color:var(--red)}
+  .ticket.live::after{content:"Live";position:absolute;top:14px;right:16px;background:var(--red);color:#fff;font-size:.75rem;font-weight:600;padding:2px 10px;border-radius:99px}
+
+  /* League table */
+  .wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;min-width:480px}
+  th,td{padding:12px 10px;text-align:center;border-bottom:1px solid rgba(244,246,238,.18)}
+  th:nth-child(2),td:nth-child(2){text-align:left}
+  th{font-weight:600;color:var(--flag)}
+  td:last-child{font-weight:700}
+  tbody tr:first-child td:nth-child(2){font-weight:700}
+  tbody tr:first-child{background:rgba(255,210,63,.12)}
+
+  /* Pick your XI */
+  .xi{display:grid;gap:28px;grid-template-columns:1fr;align-items:start}
+  @media(min-width:800px){.xi{grid-template-columns:320px 1fr}}
+  .formations{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+  button{font:inherit;cursor:pointer}
+  .formations button{background:transparent;color:var(--chalk);border:2px solid var(--chalk);padding:8px 18px;border-radius:99px;font-weight:600}
+  .formations button[aria-pressed="true"]{background:var(--flag);border-color:var(--flag);color:var(--night)}
+  .xi p{max-width:44ch;opacity:.85}
+  #xiPitch{position:relative;width:100%;max-width:520px;aspect-ratio:3/4;margin-inline:auto;border:4px solid rgba(244,246,238,.75);
+    background:repeating-linear-gradient(0deg,var(--turf) 0 12.5%,var(--turf-2) 12.5% 25%)}
+  #xiPitch::before{content:"";position:absolute;left:50%;top:0;width:44%;height:16%;transform:translateX(-50%);border:4px solid rgba(244,246,238,.75);border-top:0}
+  #xiPitch::after{content:"";position:absolute;left:50%;bottom:0;width:44%;height:16%;transform:translateX(-50%);border:4px solid rgba(244,246,238,.75);border-bottom:0}
+  .pl{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;color:var(--chalk);transition:left .5s ease,top .5s ease}
+  .pl i{width:30px;height:30px;border-radius:50%;background:var(--flag);border:3px solid var(--night)}
+  .pl span{font-size:.8rem;font-weight:600;background:var(--night);padding:1px 8px;border-radius:4px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  footer{padding:60px 5vw;text-align:center;background:var(--turf);}
+  footer b{font-family:var(--display);font-size:2.6rem;display:block;line-height:1}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+  @media(max-width:560px){nav{gap:12px}nav a{font-size:.85rem}}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="mark" href="#top">ELLY<span>.</span></a>
+  <nav>
+    <a href="#matchday">Matchday</a>
+    <a href="#table">Table</a>
+    <a href="#xi">My XI</a>
+  </nav>
+</header>
+
+<main id="top">
+  <div class="hero" id="pitch">
+    <div class="lines"></div>
+    <div>
+      <h1>ELLY</h1>
+      <p>Football, my way.</p>
+    </div>
+    <div class="hint">Tap the pitch to kick the ball</div>
+    <div id="ball" aria-hidden="true">
+      <svg viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="48" fill="#f4f6ee" stroke="#0c2a1b" stroke-width="4"/>
+        <polygon points="50,30 69,44 62,66 38,66 31,44" fill="#0c2a1b"/>
+        <path d="M50 30V4M69 44l24-8M62 66l14 22M38 66L24 88M31 44L7 36" stroke="#0c2a1b" stroke-width="4" fill="none"/>
+      </svg>
+    </div>
+  </div>
+
+  <section id="matchday">
+    <h2>This <em>week's</em> matches</h2>
+    <div class="fixtures" id="fixtures"></div>
+  </section>
+
+  <section id="table">
+    <h2>League <em>table</em></h2>
+    <div class="wrap">
+      <table>
+        <thead><tr><th>Pos</th><th>Club</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="xi">
+    <h2>Pick <em>your</em> XI</h2>
+    <div class="xi">
+      <div>
+        <div class="formations" id="formations" role="group" aria-label="Formation"></div>
+        <p>Choose a formation, then tap any player to type in a name. Build the team you wish you could play for.</p>
+      </div>
+      <div id="xiPitch"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <b>ELLY</b>
+  Made by Elly. Play on.
+</footer>
+
+<script>
+/* ---------- EDIT YOUR CONTENT HERE ---------- */
+const fixtures = [
+  {home:"Machester United",  away:"chelsea",    when:"Sat 4:00 PM", where:"Old Trafford", live:false},
+  {home:"Arsenal",away:"Manchester City", when:"Sun 3:00 PM", where:"Emirates Stadium", live:true},
+  {home:"liverpool",     away:"Tottenham",     when:"Sun 5:30 PM", where:"Anfield", live:false}
+];
+const table = [
+  ["Machester United",10,7,2,1],["chelsea",10,6,3,1],["Arsenal",10,5,3,2],
+  ["liverpool",10,4,3,3],["Manchester City",10,3,2,5],["Tottenham",10,2,3,5]
+]; // club, played, won, drawn, lost
+
+/* Positions are [x%, y%] with the goal at the bottom */
+const formations = {
+  "4-3-3":[[50,92],[15,72],[38,74],[62,74],[85,72],[28,52],[50,48],[72,52],[18,22],[50,16],[82,22]],
+  "4-4-2":[[50,92],[15,72],[38,74],[62,74],[85,72],[15,48],[38,50],[62,50],[85,48],[38,20],[62,20]],
+  "3-5-2":[[50,92],[25,74],[50,76],[75,74],[10,50],[30,52],[50,46],[70,52],[90,50],[38,20],[62,20]]
+};
+
+
+// Fixtures
+document.getElementById('fixtures').innerHTML = fixtures.map(f =>
+  `<div class="ticket${f.live?' live':''}"><b>${f.home} v ${f.away}</b><small>${f.when} · ${f.where}</small></div>`).join('');
+
+// Table
+document.getElementById('tbody').innerHTML = table
+  .map(r => ({c:r[0],p:r[1],w:r[2],d:r[3],l:r[4],pts:r[2]*3+r[3]}))
+  .sort((a,b)=>b.pts-a.pts)
+  .map((r,i)=>`<tr><td>${i+1}</td><td>${r.c}</td><td>${r.p}</td><td>${r.w}</td><td>${r.d}</td><td>${r.l}</td><td>${r.pts}</td></tr>`).join('');
+
+// Kick the ball
+const pitch = document.getElementById('pitch'), ball = document.getElementById('ball');
+let spin = 0;
+pitch.addEventListener('click', e => {
+  const r = pitch.getBoundingClientRect();
+  ball.style.left = (e.clientX - r.left) + 'px';
+  ball.style.top  = (e.clientY - r.top) + 'px';
+  spin += 720;
+  ball.firstElementChild.style.transform = `rotate(${spin}deg)`;
+});
+
+// Pick your XI
+const names = Array(11).fill('');
+const xiPitch = document.getElementById('xiPitch');
+const fWrap = document.getElementById('formations');
+let current = "4-3-3";
+
+function drawXI(){
+  xiPitch.innerHTML = '';
+  formations[current].forEach((pos,i)=>{
+    const b = document.createElement('button');
+    b.className='pl'; b.style.left=pos[0]+'%'; b.style.top=pos[1]+'%';
+    b.setAttribute('aria-label','Player '+(i+1)+(names[i]?': '+names[i]:''));
+    const label = names[i] || 'Player '+(i+1);
+    b.innerHTML = `<i></i><span></span>`;
+    b.lastChild.textContent = label;
+    b.onclick = () => {
+      const n = prompt('Who plays here?', names[i]);
+      if(n !== null){ names[i] = n.trim().slice(0,20); drawXI(); }
+    };
+    xiPitch.appendChild(b);
+  });
+}
+Object.keys(formations).forEach(k=>{
+  const b = document.createElement('button');
+  b.textContent = k; b.setAttribute('aria-pressed', k===current);
+  b.onclick = () => {
+    current = k;
+    [...fWrap.children].forEach(c=>c.setAttribute('aria-pressed', c.textContent===k));
+    drawXI();
+  };
+  fWrap.appendChild(b);
+});
+drawXI();
+</script>
+</body>
+</html>
