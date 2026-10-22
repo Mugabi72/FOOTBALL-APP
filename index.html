@@ -201,8 +201,8 @@ function drawXI(){
     b.innerHTML = `<i></i><span></span>`;
     b.lastChild.textContent = label;
     b.onclick = () => {
-      const n = prompt('Who plays here?', names[i]);
-      if(n !== null){ names[i] = n.trim().slice(0,20); drawXI(); }
+      const n = prompt('Enter player name?', names[i]);
+      if(n !== null){ names[i] = n.trim().slice(0,30); drawXI(); }
     };
     xiPitch.appendChild(b);
   });
