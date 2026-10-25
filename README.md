@@ -66,3 +66,81 @@ git push
 Wait a minute or two, then refresh your live site.
 
 Use your own photos and videos, or ones you have permission to use. I can also make the gallery open each picture in a bigger view when you click it.
+
+
+Here is more on photos and videos for your football site.
+
+## 1. Prepare your files first
+
+- **Photos:** Resize to about 1200 px wide before uploading. Phone photos can be 5 MB or more, which makes the site slow. Free tools like squoosh.app or TinyPNG compress them.
+- **Videos:** Use `.mp4` (H.264). Under 25 MB is best. Trim clips to 10-30 seconds of the best moments.
+- **File names:** Lowercase, no spaces: `goal1.jpg`, not `Goal 1.JPG`. GitHub Pages is case-sensitive, so a mismatch gives a broken picture.
+
+## 2. Better video tags
+
+```html
+<video src="media/match1.mp4" controls preload="metadata" poster="media/match1-cover.jpg"></video>
+```
+
+- `poster` shows a cover picture before the video plays.
+- `preload="metadata"` stops the whole video loading at once.
+- For a silent looping highlight: `<video src="media/clip.mp4" autoplay muted loop playsinline></video>`
+
+## 3. Faster pictures
+
+Add `loading="lazy"` to each image so they load only as people scroll:
+
+```html
+<img src="media/goal1.jpg" alt="Players in a match" loading="lazy">
+```
+
+## 4. Captions
+
+```html
+<figure>
+  <img src="media/goal1.jpg" alt="Goal celebration" loading="lazy">
+  <figcaption>Goal celebration, Saturday match</figcaption>
+</figure>
+```
+
+Add this CSS: `.gallery figure{margin:0} .gallery figcaption{font-size:14px;padding-top:6px}`
+
+## 5. Click to enlarge
+
+Put this CSS above `footer{`:
+
+```css
+#lightbox{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:99;cursor:pointer}
+#lightbox img{max-width:92%;max-height:92%;border-radius:6px}
+```
+
+Put this just before `</body>`:
+
+```html
+<div id="lightbox"><img alt=""></div>
+<script>
+const lb=document.getElementById('lightbox'),lbImg=lb.querySelector('img');
+document.querySelectorAll('.gallery img').forEach(i=>{
+  i.style.cursor='pointer';
+  i.onclick=()=>{lbImg.src=i.src;lb.style.display='flex'};
+});
+lb.onclick=()=>lb.style.display='none';
+</script>
+```
+
+Clicking a picture opens it large, and clicking again closes it.
+
+6. Common problems
+
+| Problem | Fix |
+|---|---|
+| Broken picture | Check the exact name and extension in `media/` |
+| Video won't play | Convert to `.mp4` (H.264) |
+| Push rejected | A file is over 100 MB, so compress it or use YouTube |
+| Site not updating | Wait 1-2 minutes, then hard refresh with Ctrl + F5 |
+
+ 7. Permission
+
+Only publish pictures and videos of people if you took them or have permission. Ask players first, especially if the site is public.
+
+Which part do you want more on: the click-to-enlarge, YouTube embeds, or something else?
