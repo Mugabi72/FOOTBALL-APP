@@ -284,10 +284,105 @@ Clicking a picture opens it large, and clicking again closes it.
 Only publish pictures and videos of people if you took them or have permission. Ask players first, especially if the site is public.
 
 Which part do you want more on: the click-to-enlarge, YouTube embeds, or something else?
+# More for your football gallery
 
+## 1. YouTube videos (best for long matches)
 
- 7. Permission
+1. Upload the video to YouTube (set it to **Unlisted** if you don't want it searchable).
+2. Open it and copy the code after `v=` in the link. In `youtube.com/watch?v=aB3dEf9GhI`, the code is `aB3dEf9GhI`.
+3. Paste it in:
 
-Only publish pictures and videos of people if you took them or have permission. Ask players first, especially if the site is public.
+```html
+<iframe src="https://www.youtube.com/embed/aB3dEf9GhI" title="Match highlights" loading="lazy" allowfullscreen></iframe>
+```
 
-Which part do you want more on: the click-to-enlarge, YouTube embeds, or something else?
+## 2. Better click-to-enlarge (arrows, close button, keyboard)
+
+Replace the earlier lightbox HTML and script with this:
+
+```html
+<div id="lightbox"><button id="close">×</button><img alt=""></div>
+<script>
+const lb=document.getElementById('lightbox'),lbImg=lb.querySelector('img');
+const imgs=[...document.querySelectorAll('.gallery img')];let n=0;
+function show(i){n=(i+imgs.length)%imgs.length;lbImg.src=imgs[n].src;lb.style.display='flex'}
+imgs.forEach((im,i)=>{im.style.cursor='pointer';im.onclick=()=>show(i)});
+lb.onclick=e=>{if(e.target.id==='close')lb.style.display='none';else show(e.clientX>innerWidth/2?n+1:n-1)};
+document.onkeydown=e=>{
+  if(lb.style.display!=='flex')return;
+  if(e.key==='Escape')lb.style.display='none';
+  if(e.key==='ArrowRight')show(n+1);
+  if(e.key==='ArrowLeft')show(n-1);
+};
+</script>
+```
+
+Add this CSS: `#close{position:absolute;top:16px;right:20px;font-size:36px;background:none;border:0;color:#fff;cursor:pointer}`
+
+Tap the right half of the screen for the next picture, and the left half for the previous one.
+
+## 3. Filter buttons (All / Matches / Training)
+
+Give each gallery item a category:
+
+```html
+<figure data-cat="match"><img src="media/goal1.jpg" alt="Goal" loading="lazy"></figure>
+<figure data-cat="training"><img src="media/train1.jpg" alt="Training" loading="lazy"></figure>
+```
+
+Put the buttons above `<div class="gallery">`:
+
+```html
+<div class="filters">
+  <button data-f="all">All</button>
+  <button data-f="match">Matches</button>
+  <button data-f="training">Training</button>
+</div>
+```
+
+Script:
+
+```html
+<script>
+document.querySelectorAll('.filters button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.gallery figure').forEach(f=>{
+    f.style.display=(b.dataset.f==='all'||f.dataset.cat===b.dataset.f)?'':'none';
+  });
+});
+</script>
+```
+
+CSS: `.filters{display:flex;gap:8px;margin-bottom:16px} .filters button{padding:8px 14px;border:0;border-radius:20px;cursor:pointer}`
+
+## 4. Hover zoom effect
+
+```css
+.gallery img{transition:transform .3s}
+.gallery img:hover{transform:scale(1.04)}
+```
+
+## 5. Background video in the top section
+
+```html
+<header style="position:relative;overflow:hidden">
+  <video src="media/hero.mp4" autoplay muted loop playsinline
+         style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.35;z-index:-1"></video>
+  ...your existing header content...
+</header>
+```
+
+Keep this clip under 5 MB and without sound. It must have `muted`, or browsers will block autoplay.
+
+## 6. Getting files from your phone into Codespaces
+
+- Send the files to your computer (WhatsApp Web, USB, or Google Drive), then drag them into `media/`.
+- Alternatively, right-click the `media` folder, choose **Upload...**, and pick the files.
+- Rename each file to lowercase with no spaces before you push.
+
+## 7. Limits to remember
+
+- GitHub Pages sites should stay under about 1 GB total, so don't upload dozens of large videos.
+- Git LFS files don't display on GitHub Pages, so don't use LFS for your media.
+- Photos should be around 1200 px wide, and videos should be `.mp4` clips of 10-30 seconds.
+
+I can also build a full finished gallery section with all of these combined, using your actual file names. Send me the names of your photos and videos and I'll write it ready to paste.-
