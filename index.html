@@ -305,3 +305,112 @@ drawNotes();
 ```
 
 Notes are saved per browser, so they stay after a refresh but won't show on another device. Want me to send the full updated file with everything already in place?
+
+
+Here are three more features in the same paste-in style. They all work with your existing code.
+
+## 1. Top scorers (bars that scale with goals)
+
+**Nav link** (inside `<nav>`)
+```html
+<a href="#scorers">Scorers</a>
+```
+
+**HTML** (after the `#table` section)
+```html
+<section id="scorers">
+  <h2>Top <em>scorers</em></h2>
+  <ul class="scorers" id="scorersList"></ul>
+</section>
+```
+
+**CSS**
+```css
+.scorers{list-style:none;padding:0;display:grid;gap:10px;max-width:600px}
+.scorers li{display:flex;align-items:center;gap:16px;background:rgba(244,246,238,.08);padding:12px 16px;border-radius:6px}
+.scorers .info{flex:1}
+.scorers small{opacity:.75;margin-left:6px}
+.scorers .bar{height:8px;margin-top:6px;background:var(--flag);border-radius:99px}
+.scorers strong{font-family:var(--display);font-size:1.8rem}
+```
+
+**JS**
+```js
+// Top scorers: [name, club, goals]. Edit these to your own.
+const scorers = [
+  ["Player One","Arsenal",9],
+  ["Player Two","Manchester City",8],
+  ["Player Three","Liverpool",7]
+];
+const maxGoals = Math.max(...scorers.map(s=>s[2]));
+document.getElementById('scorersList').innerHTML = scorers
+  .slice().sort((a,b)=>b[2]-a[2])
+  .map(s=>`<li><div class="info"><b>${s[0]}</b><small>${s[1]}</small>
+    <div class="bar" style="width:${s[2]/maxGoals*100}%"></div></div><strong>${s[2]}</strong></li>`).join('');
+```
+
+## 2. Favourite club (highlighted in the table, remembered)
+
+**HTML** (inside the `#table` section, above `<div class="wrap">`)
+```html
+<label for="favClub" class="sr">Favourite club</label>
+<select id="favClub"></select>
+```
+
+**CSS** (put it after your existing table CSS)
+```css
+#favClub{font:inherit;padding:10px 14px;border-radius:99px;border:2px solid var(--chalk);background:var(--night);color:var(--chalk);margin-bottom:18px}
+tbody tr.fav{background:rgba(255,210,63,.25)}
+```
+
+**JS**: replace your whole `// Table` block with this:
+```js
+// Table + favourite club
+let fav = '';
+try { fav = localStorage.getItem('ellyFav') || ''; } catch(e) {}
+const favSel = document.getElementById('favClub');
+favSel.innerHTML = '<option value="">Favourite club: none</option>' +
+  table.map(r=>`<option${r[0]===fav?' selected':''}>${r[0]}</option>`).join('');
+
+function drawTable(){
+  document.getElementById('tbody').innerHTML = table
+    .map(r => ({c:r[0],p:r[1],w:r[2],d:r[3],l:r[4],pts:r[2]*3+r[3]}))
+    .sort((a,b)=>b.pts-a.pts)
+    .map((r,i)=>`<tr${r.c===fav?' class="fav"':''}><td>${i+1}</td><td>${r.c}${r.c===fav?' ★':''}</td><td>${r.p}</td><td>${r.w}</td><td>${r.d}</td><td>${r.l}</td><td>${r.pts}</td></tr>`).join('');
+}
+favSel.onchange = () => {
+  fav = favSel.value;
+  try { localStorage.setItem('ellyFav', fav); } catch(e) {}
+  drawTable();
+};
+drawTable();
+```
+
+## 3. Save "My XI" so it survives a refresh
+
+Two small edits in the XI code.
+
+**a)** Replace `const names = Array(11).fill('');` with:
+```js
+let names = Array(11).fill('');
+try {
+  const s = JSON.parse(localStorage.getItem('ellyXI'));
+  if (Array.isArray(s) && s.length === 11) names = s.map(x => String(x).slice(0,30));
+} catch(e) {}
+```
+
+**b)** In the player `b.onclick`, replace the `if(n !== null){...}` line with:
+```js
+if(n !== null){
+  names[i] = n.trim().slice(0,30);
+  try { localStorage.setItem('ellyXI', JSON.stringify(names)); } catch(e) {}
+  drawXI();
+}
+```
+
+**Notes**
+- The scorer names are placeholders, so replace them with real ones.
+- All saved data stays in your own browser, like your notes.
+
+Next I can add a score predictor on each fixture or a countdown to the next match. I can also send the full updated file with everything in place.
+  
